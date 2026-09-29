@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📅 تقويم AhmdSchool</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700;900&family=Cairo:wght@400;600;700;900&family=Reem+Kufi:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+:root {
+  --paper: #fdfbf5;
+  --paper-dark: #f5f0e3;
+  --paper-line: #e8e0cc;
+  --paper-line-red: #f0c8c8;
+  --ink: #2a2118;
+  --ink-light: #6b5d4a;
+  --ink-muted: #a09580;
+  --gold: #b8945f;
+  --gold-dark: #8a6b3a;
+  --red: #c0392b;
+  --blue: #2c5aa0;
+  --green: #3d7c5c;
+  --shadow-paper: 0 20px 60px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-soft: 0 4px 15px rgba(0,0,0,0.08);
+  --font-title: 'Amiri', serif;
+  --font-body: 'Cairo', sans-serif;
+  --font-accent: 'Reem Kufi', sans-serif;
+}
+body.dark-mode {
+  --paper: #1e1a14;
+  --paper-dark: #15120d;
+  --paper-line: #2e2820;
+  --paper-line-red: #4a2a2a;
+  --ink: #ebe0cc;
+  --ink-light: #b8a888;
+  --ink-muted: #7a6f5a;
+  --shadow-paper: 0 20px 60px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-soft: 0 4px 15px rgba(0,0,0,0.3);
+}
+html, body {
+  min-height: 100vh;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: linear-gradient(135deg, #f5efe0 0%, #e8dfc8 100%);
+  transition: background 0.4s, color 0.3s;
+  overflow-x: hidden;
+}
+body.dark-mode {
+  background: linear-gradient(135deg, #0a0806 0%, #15120d 100%);
+}
+
+/* خلفية نقشة خفيفة */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(184,148,95,0.06) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(184,148,95,0.06) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* الشريط العلوي */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--paper);
+  backdrop-filter: blur(15px);
+  border-bottom: 2px solid var(--gold);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 12px 20px;
+}
+.topbar-inner {
+  max-width: 1500px; margin: 0 auto;
+  display: flex; gap: 12px; flex-wrap: wrap;
+  align-items: center; justify-content: space-between;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.4rem;
+  box-shadow: 0 4px 12px rgba(184,148,95,0.4);
+}
+.brand-text {
+  display: flex; flex-direction: column; line-height: 1.1;
+}
+.brand-name {
+  font-family: var(--font-title);
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--ink);
+}
+.brand-sub {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  letter-spacing: 1px;
+}
+
+.topbar-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center;
+}
+.icon-btn {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid var(--paper-line);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-btn:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(184,148,95,0.25);
+}
+
+/* شريط الساعة والتاريخ */
+.clock-bar {
+  max-width: 1500px; margin: 15px auto 0;
+  padding: 0 20px;
+  display: flex; gap: 12px; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+.clock-card {
+  flex: 1; min-width: 250px;
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 18px 22px;
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--paper-line);
+  display: flex; align-items: center; gap: 15px;
+  position: relative; overflow: hidden;
+}
+.clock-card::before {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+}
+.clock-icon {
+  width: 50px; height: 50px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(184,148,95,0.3);
+}
+.clock-content { flex: 1; }
+.clock-time {
+  font-family: var(--font-title);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: 1px;
+  line-height: 1.1;
+  direction: ltr;
+  text-align: right;
+}
+.clock-time .seconds {
+  font-size: 0.6em;
+  color: var(--gold-dark);
+  margin-right: 4px;
+}
+.clock-time .period {
+  font-size: 0.55em;
+  color: var(--ink-light);
+  font-family: var(--font-accent);
+  margin-right: 8px;
+}
+.clock-date {
+  font-family: var(--font-accent);
+  font-size: 0.9rem;
+  color: var(--ink-light);
+  margin-top: 4px;
+}
+.clock-hijri {
+  font-family: var(--font-title);
+  font-size: 0.85rem;
+  color: var(--gold-dark);
+  margin-top: 2px;
+}
+
+/* البحث */
+.search-bar {
+  max-width: 1500px; margin: 12px auto 0;
+  padding: 0 20px;
+  position: relative; z-index: 1;
+}
+.search-wrap {
+  position: relative;
+  background: var(--paper);
+  border-radius: 14px;
+  border: 1.5px solid var(--paper-line);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.3s;
+}
+.search-wrap:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(184,148,95,0.15), var(--shadow-soft);
+}
+.search-input {
+  width: 100%;
+  padding: 14px 50px 14px 18px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  border-radius: 14px;
+}
+.search-input:focus { outline: none; }
+.search-input::placeholder { color: var(--ink-muted); }
+.search-icon {
+  position: absolute; right: 18px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold-dark);
+  font-size: 1.1rem;
+  pointer-events: none;
+}
+.search-results {
+  display: none;
+  background: var(--paper);
+  border-radius: 14px;
+  margin-top: 8px;
+  border: 1px solid var(--paper-line);
+  box-shadow: var(--shadow-paper);
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 10px;
+}
+.search-results.show { display: block; }
+.search-result-item {
+  padding: 12px 15px;
+  border-radius: 10px;
+  border-bottom: 1px solid var(--paper-line);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.search-result-item:last-child { border-bottom: none; }
+.search-result-item:hover {
+  background: var(--paper-dark);
+  transform: translateX(-3px);
+}
+.search-result-item .sr-title {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 0.9rem;
+  margin-bottom: 3px;
+}
+.search-result-item .sr-meta {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+.search-result-item .sr-type {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.search-result-item .sr-type.note {
+  background: rgba(44,90,160,0.15);
+  color: var(--blue);
+}
+.search-result-item .sr-type.birthday {
+  background: rgba(192,57,43,0.15);
+  color: var(--red);
+}
+.search-empty {
+  padding: 30px;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+
+/* التبويبات */
+.tabs-bar {
+  max-width: 1500px; margin: 15px auto 0;
+  padding: 0 20px;
+  position: relative; z-index: 1;
+}
+.tabs {
+  display: flex; gap: 6px;
+  background: var(--paper);
+  padding: 6px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--paper-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  flex: 1;
+  min-width: 130px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--ink-light);
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.tab-btn:hover {
+  color: var(--ink);
+  background: var(--paper-dark);
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  box-shadow: 0 6px 15px rgba(184,148,95,0.35);
+}
+
+/* الحاوية */
+.container {
+  max-width: 1500px; margin: 20px auto 0;
+  padding: 0 20px 40px;
+  position: relative; z-index: 1;
+}
+.tab-pane { display: none; animation: fadeIn 0.4s ease; }
+.tab-pane.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   تبويب التقويم — صفحتان متقابلتان
+   ============================================ */
+.calendar-controls {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+  align-items: center;
+}
+.nav-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1.5px solid var(--paper-line);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.nav-btn:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(184,148,95,0.25);
+}
+.date-display {
+  padding: 10px 24px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  font-family: var(--font-title);
+  font-weight: 900;
+  font-size: 1rem;
+  box-shadow: 0 6px 15px rgba(184,148,95,0.35);
+}
+
+/* دفاتر التقويم */
+.calendar-book {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  perspective: 2000px;
+}
+@media (min-width: 1000px) {
+  .calendar-book {
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    position: relative;
+  }
+  /* خط منتصف الدفتر */
+  .calendar-book::after {
+    content: '';
+    position: absolute;
+    top: 20px; bottom: 20px;
+    right: 50%;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, var(--gold), transparent);
+    transform: translateX(50%);
+    z-index: 5;
+    box-shadow: 0 0 20px rgba(184,148,95,0.5);
+  }
+}
+
+.page {
+  background: var(--paper);
+  border-radius: 8px;
+  padding: 30px 25px;
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--paper-line);
+  position: relative;
+  overflow: hidden;
+  min-height: 700px;
+}
+.page::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    repeating-linear-gradient(180deg,
+      transparent 0px,
+      transparent 35px,
+      var(--paper-line) 35px,
+      var(--paper-line) 36px);
+  pointer-events: none;
+  opacity: 0.5;
+}
+.page::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  right: 60px;
+  width: 1px;
+  background: var(--paper-line-red);
+  opacity: 0.6;
+  pointer-events: none;
+}
+/* صفحة النهار: ظل داخل الجانب */
+.page.day-page {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+@media (min-width: 1000px) {
+  .page.day-page {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: -8px 0 30px rgba(0,0,0,0.08), var(--shadow-paper);
+  }
+  .page.night-page {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    box-shadow: 8px 0 30px rgba(0,0,0,0.08), var(--shadow-paper);
+  }
+}
+
+/* ترويسة الصفحة */
+.page-header {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--gold);
+}
+.page-header .page-day-name {
+  font-family: var(--font-title);
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+.page-header .page-date {
+  font-family: var(--font-accent);
+  font-size: 0.9rem;
+  color: var(--ink-light);
+}
+.page-header .page-period {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.page-header .page-period.day {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+}
+.page-header .page-period.night {
+  background: linear-gradient(135deg, #1e3a8a, #312e81);
+  color: white;
+}
+
+/* سطور الساعات */
+.hours-list {
+  position: relative;
+  z-index: 2;
+}
+.hour-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  min-height: 42px;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--paper-line);
+  position: relative;
+}
+.hour-row:last-child { border-bottom: none; }
+.hour-label {
+  width: 65px;
+  flex-shrink: 0;
+  font-family: var(--font-accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--gold-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-dark);
+  border-radius: 8px;
+  direction: ltr;
+}
+.hour-label.current {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184,148,95,0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(184,148,95,0); }
+}
+.hour-note {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  border-radius: 8px;
+  resize: none;
+  transition: all 0.2s;
+  line-height: 1.4;
+}
+.hour-note::placeholder {
+  color: var(--ink-muted);
+  font-style: italic;
+  font-size: 0.82rem;
+}
+.hour-note:focus {
+  outline: none;
+  background: rgba(184,148,95,0.1);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.hour-note.has-content {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* الملاحظات السريعة في الأسفل */
+.page-footer {
+  position: relative;
+  z-index: 2;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid var(--gold);
+}
+.quick-note-label {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.quick-note {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--paper-line);
+  background: var(--paper-dark);
+  border-radius: 10px;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  resize: vertical;
+  min-height: 60px;
+}
+.quick-note:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(184,148,95,0.15);
+}
+
+/* ============================================
+   تبويب تواريخ الميلاد
+   ============================================ */
+.birthday-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 900px) {
+  .birthday-layout { grid-template-columns: 380px 1fr; }
+}
+.card-panel {
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--paper-line);
+}
+.panel-title {
+  font-family: var(--font-title);
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--ink);
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--gold);
+  display: flex; align-items: center; gap: 8px;
+}
+.form-group { margin-bottom: 15px; }
+.form-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1.5px solid var(--paper-line);
+  background: var(--paper-dark);
+  border-radius: 10px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: var(--paper);
+  box-shadow: 0 0 0 3px rgba(184,148,95,0.15);
+}
+.btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  box-shadow: 0 6px 15px rgba(184,148,95,0.35);
+  width: 100%;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(184,148,95,0.5);
+}
+.btn-secondary {
+  background: var(--paper-dark);
+  color: var(--ink);
+  border: 1.5px solid var(--paper-line);
+}
+.btn-secondary:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+.btn-danger {
+  background: linear-gradient(135deg, #ef476f, #c0392b);
+  color: white;
+}
+.btn-danger:hover { transform: translateY(-2px); }
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  border-radius: 8px;
+}
+
+/* قائمة تواريخ الميلاد */
+.birthday-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+.birthday-card {
+  background: var(--paper-dark);
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--paper-line);
+  transition: all 0.25s;
+  position: relative;
+}
+.birthday-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  border-color: var(--gold);
+}
+.birthday-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.birthday-avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.2rem; font-weight: 900;
+  flex-shrink: 0;
+}
+.birthday-name {
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.birthday-date {
+  font-size: 0.8rem;
+  color: var(--ink-light);
+}
+.birthday-details {
+  display: flex; gap: 8px; flex-wrap: wrap;
+  font-size: 0.78rem;
+  margin-top: 8px;
+}
+.birthday-badge {
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink-light);
+  font-weight: 700;
+  border: 1px solid var(--paper-line);
+}
+.birthday-badge.today {
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  border-color: transparent;
+  animation: pulse 2s ease-in-out infinite;
+}
+.birthday-badge.today::before { content: '🎂 '; }
+.birthday-delete {
+  position: absolute;
+  top: 8px; left: 8px;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--red);
+  color: white;
+  border: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.birthday-card:hover .birthday-delete { opacity: 1; }
+.birthday-delete:hover { transform: scale(1.15); }
+
+/* ============================================
+   تبويب التقويم الزراعي
+   ============================================ */
+.agri-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.agri-card {
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--paper-line);
+  border-top: 4px solid var(--gold);
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.agri-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+}
+.agri-card.current {
+  border-top-color: var(--red);
+  box-shadow: 0 15px 35px rgba(192,57,43,0.2);
+}
+.agri-card.current::before {
+  content: '📌 اليوم';
+  position: absolute;
+  top: 10px; left: 10px;
+  background: linear-gradient(135deg, var(--red), #8b1a1a);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+.agri-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  display: block;
+  text-align: center;
+}
+.agri-name {
+  font-family: var(--font-title);
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--ink);
+  text-align: center;
+  margin-bottom: 6px;
+}
+.agri-period {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  margin-bottom: 10px;
+  direction: ltr;
+}
+.agri-desc {
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  line-height: 1.7;
+  text-align: right;
+  padding-top: 10px;
+  border-top: 1px dashed var(--paper-line);
+}
+.agri-season {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+/* ============================================
+   تبويب الفلك
+   ============================================ */
+.astro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.astro-card {
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--paper-line);
+  display: flex; align-items: center; gap: 14px;
+  transition: all 0.25s;
+}
+.astro-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-paper);
+  border-color: var(--gold);
+}
+.astro-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+.astro-icon.sun { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.astro-icon.moon { background: linear-gradient(135deg, #6366f1, #312e81); }
+.astro-icon.star { background: linear-gradient(135deg, #8b5cf6, #4c1d95); }
+.astro-icon.planet { background: linear-gradient(135deg, #ec4899, #9d174d); }
+.astro-icon.eclipse { background: linear-gradient(135deg, #dc2626, #7f1d1d); }
+.astro-content { flex: 1; }
+.astro-label {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.astro-value {
+  font-family: var(--font-accent);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  direction: ltr;
+  text-align: right;
+}
+
+/* الأحداث الفلكية */
+.events-list {
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--paper-line);
+}
+.event-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--paper-line);
+}
+.event-item:last-child { border-bottom: none; }
+.event-time {
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: var(--paper-dark);
+  font-family: var(--font-accent);
+  font-weight: 700;
+  color: var(--gold-dark);
+  font-size: 0.8rem;
+  direction: ltr;
+  flex-shrink: 0;
+}
+.event-content { flex: 1; }
+.event-title {
+  font-weight: 900;
+  color: var(--ink);
+  font-size: 0.95rem;
+  margin-bottom: 3px;
+}
+.event-desc {
+  font-size: 0.82rem;
+  color: var(--ink-light);
+  line-height: 1.6;
+}
+
+/* ============================================
+   تبويب الليل والنهار — إنفوجرافيك
+   ============================================ */
+.daynight-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+@media (min-width: 900px) {
+  .daynight-layout { grid-template-columns: 1fr 1fr; }
+}
+.sky-diagram {
+  background: linear-gradient(180deg, #1a2456 0%, #4a3a7a 50%, #c4885c 100%);
+  border-radius: 20px;
+  padding: 30px;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--paper-line);
+}
+body.dark-mode .sky-diagram {
+  background: linear-gradient(180deg, #0a0820 0%, #1a1040 50%, #2a1840 100%);
+}
+.sky-diagram .stars {
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, white, transparent),
+    radial-gradient(1px 1px at 30% 15%, white, transparent),
+    radial-gradient(1px 1px at 50% 25%, white, transparent),
+    radial-gradient(1px 1px at 70% 10%, white, transparent),
+    radial-gradient(1px 1px at 85% 30%, white, transparent),
+    radial-gradient(1px 1px at 15% 40%, white, transparent);
+  background-size: 100% 100%;
+  opacity: 0.6;
+}
+.sky-arc {
+  position: absolute;
+  top: 0; left: 50%;
+  width: 90%;
+  height: 100%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 0 0;
+  border: 2px dashed rgba(255,255,255,0.25);
+  border-bottom: none;
+}
+.sun-orb {
+  position: absolute;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff8c0, #fbbf24, #f59e0b);
+  box-shadow:
+    0 0 30px rgba(251,191,36,0.9),
+    0 0 60px rgba(251,191,36,0.5),
+    inset -8px -8px 15px rgba(245,158,11,0.5);
+  transition: all 1s ease;
+  z-index: 3;
+}
+.moon-orb {
+  position: absolute;
+  width: 45px; height: 45px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #e8e8f0, #b8b8c8);
+  box-shadow:
+    0 0 25px rgba(200,200,255,0.7),
+    inset -5px -5px 12px rgba(120,120,160,0.4);
+  transition: all 1s ease;
+  z-index: 3;
+}
+.sky-horizon {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.5), transparent);
+}
+.sky-label {
+  position: absolute;
+  color: white;
+  font-family: var(--font-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+}
+.sky-label.east { top: 20px; left: 15px; }
+.sky-label.south { top: 15px; left: 50%; transform: translateX(-50%); }
+.sky-label.west { top: 20px; right: 15px; }
+
+.daynight-info {
+  display: flex; flex-direction: column; gap: 15px;
+}
+.info-card {
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--paper-line);
+  display: flex; align-items: center; gap: 15px;
+}
+.info-card .info-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.info-card .info-icon.sunrise { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.info-card .info-icon.sunset { background: linear-gradient(135deg, #f59e0b, #dc2626); }
+.info-card .info-icon.day-length { background: linear-gradient(135deg, #fcd34d, #f97316); }
+.info-card .info-icon.night-length { background: linear-gradient(135deg, #6366f1, #1e1b4b); }
+.info-card .info-content { flex: 1; }
+.info-card .info-label {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+.info-card .info-value {
+  font-family: var(--font-accent);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--ink);
+  direction: ltr;
+  text-align: right;
+}
+
+/* شريط تقدم اليوم */
+.day-progress-bar {
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--paper-line);
+  margin-top: 15px;
+}
+.day-progress-label {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.day-progress-track {
+  height: 24px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1e3a8a 0%, #1e3a8a 25%, #fbbf24 25%, #fbbf24 75%, #1e3a8a 75%);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
+}
+.day-progress-track::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg,
+    transparent 0px, transparent 24px,
+    rgba(255,255,255,0.15) 24px, rgba(255,255,255,0.15) 25px);
+}
+.day-progress-handle {
+  position: absolute;
+  top: -4px; bottom: -4px;
+  width: 4px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255,255,255,0.8), 0 2px 6px rgba(0,0,0,0.3);
+  transition: left 1s ease;
+  z-index: 2;
+}
+.day-progress-handle::after {
+  content: '☀️';
+  position: absolute;
+  top: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem;
+}
+.day-progress-marks {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  margin-top: 6px;
+  direction: ltr;
+}
+
+/* ============================================
+   شريط التنزيل
+   ============================================ */
+.download-bar {
+  max-width: 1500px; margin: 20px auto 0;
+  padding: 0 20px;
+  position: relative; z-index: 1;
+}
+.download-card {
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 18px 22px;
+  box-shadow: var(--shadow-paper);
+  border: 1px solid var(--paper-line);
+  display: flex; gap: 12px; flex-wrap: wrap;
+  align-items: center; justify-content: space-between;
+}
+.download-info {
+  display: flex; align-items: center; gap: 12px;
+}
+.download-info-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.3rem;
+}
+.download-info-text {
+  display: flex; flex-direction: column;
+}
+.download-info-title {
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.download-info-sub {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+.download-buttons {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.dl-btn {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--paper-line);
+  background: var(--paper-dark);
+  color: var(--ink);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.dl-btn:hover {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(184,148,95,0.25);
+}
+.dl-btn.html { border-color: #f97316; color: #ea580c; }
+.dl-btn.pdf { border-color: #dc2626; color: #b91c1c; }
+.dl-btn.txt { border-color: #3b82f6; color: #1d4ed8; }
+.dl-btn.png { border-color: #8b5cf6; color: #6d28d9; }
+.dl-btn.html:hover { background: rgba(249,115,22,0.1); }
+.dl-btn.pdf:hover { background: rgba(220,38,38,0.1); }
+.dl-btn.txt:hover { background: rgba(59,130,246,0.1); }
+.dl-btn.png:hover { background: rgba(139,92,246,0.1); }
+
+/* الفوتر */
+.footer {
+  max-width: 1500px; margin: 30px auto 0;
+  padding: 25px 20px;
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  border-top: 2px solid var(--gold);
+  position: relative; z-index: 1;
+}
+.footer-brand {
+  font-family: var(--font-title);
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--gold-dark);
+  margin-bottom: 6px;
+}
+.footer-links {
+  display: flex; gap: 15px; justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  font-size: 0.8rem;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  color: white;
+  padding: 14px 26px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 5000;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* modal */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  align-items: center; justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--paper);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 480px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+  border: 2px solid var(--gold);
+  box-shadow: var(--shadow-paper);
+  position: relative;
+}
+.modal-title {
+  font-family: var(--font-title);
+  font-size: 1.4rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+
+/* الجوال */
+@media (max-width: 600px) {
+  .topbar { padding: 10px 12px; }
+  .brand-name { font-size: 1rem; }
+  .brand-icon { width: 36px; height: 36px; font-size: 1.2rem; }
+  .clock-card { padding: 14px; }
+  .clock-icon { width: 42px; height: 42px; font-size: 1.3rem; }
+  .clock-time { font-size: 1.5rem; }
+  .tab-btn { min-width: 110px; padding: 10px 12px; font-size: 0.8rem; }
+  .page { padding: 20px 15px; min-height: 550px; }
+  .page::after { right: 40px; }
+  .hour-label { width: 55px; font-size: 0.75rem; }
+  .hour-note { font-size: 0.82rem; }
+  .sky-diagram { padding: 20px; min-height: 300px; }
+}
+</style>
+</head>
+<body>
+
+<!-- الشريط العلوي -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-icon">📅</div>
+      <div class="brand-text">
+        <div class="brand-name">تقويم AhmdSchool</div>
+        <div class="brand-sub">Professional Calendar</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تبديل المظهر">🌙</button>
+      <button class="icon-btn" onclick="goToToday()" title="اذهب لليوم">🏠</button>
+    </div>
+  </div>
+</div>
+
+<!-- الساعة -->
+<div class="clock-bar">
+  <div class="clock-card">
+    <div class="clock-icon">⏰</div>
+    <div class="clock-content">
+      <div class="clock-time" id="liveClock">--:--:-- <span class="period" id="livePeriod">--</span></div>
+      <div class="clock-date" id="liveDate">—</div>
+      <div class="clock-hijri" id="liveHijri">—</div>
+    </div>
+  </div>
+</div>
+
+<!-- البحث -->
+<div class="search-bar">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-input" id="searchInput" placeholder="ابحث في الملاحظات وتواريخ الميلاد...">
+  </div>
+  <div class="search-results" id="searchResults"></div>
+</div>
+
+<!-- التبويبات -->
+<div class="tabs-bar">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="calendar" onclick="switchTab('calendar')">📖 التقويم</button>
+    <button class="tab-btn" data-tab="birthdays" onclick="switchTab('birthdays')">🎂 تواريخ الميلاد</button>
+    <button class="tab-btn" data-tab="agri" onclick="switchTab('agri')">🌾 التقويم الزراعي</button>
+    <button class="tab-btn" data-tab="astro" onclick="switchTab('astro')">🔭 الفلك</button>
+    <button class="tab-btn" data-tab="daynight" onclick="switchTab('daynight')">🌗 الليل والنهار</button>
+  </div>
+</div>
+
+<!-- الحاوية -->
+<div class="container">
+
+  <!-- تبويب التقويم -->
+  <div class="tab-pane active" id="tab-calendar">
+    <div class="calendar-controls">
+      <button class="nav-btn" onclick="changeDay(-1)">◀ اليوم السابق</button>
+      <div class="date-display" id="calDateDisplay">—</div>
+      <button class="nav-btn" onclick="changeDay(1)">اليوم التالي ▶</button>
+      <button class="nav-btn" onclick="goToToday()">🏠 اليوم</button>
+    </div>
+
+    <div class="calendar-book">
+      <!-- صفحة النهار -->
+      <div class="page day-page">
+        <div class="page-header">
+          <div class="page-day-name" id="dayName">—</div>
+          <div class="page-date" id="dateGregorian">—</div>
+          <span class="page-period day">☀️ النهار</span>
+        </div>
+        <div class="hours-list" id="dayHours"></div>
+        <div class="page-footer">
+          <div class="quick-note-label">📝 ملاحظات الصفحة</div>
+          <textarea class="quick-note" id="dayNote" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+        </div>
+      </div>
+
+      <!-- صفحة الليل -->
+      <div class="page night-page">
+        <div class="page-header">
+          <div class="page-day-name" id="nightDayName">—</div>
+          <div class="page-date" id="nightDateGregorian">—</div>
+          <span class="page-period night">🌙 الليل</span>
+        </div>
+        <div class="hours-list" id="nightHours"></div>
+        <div class="page-footer">
+          <div class="quick-note-label">📝 ملاحظات الصفحة</div>
+          <textarea class="quick-note" id="nightNote" placeholder="اكتب ملاحظاتك هنا..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- تبويب تواريخ الميلاد -->
+  <div class="tab-pane" id="tab-birthdays">
+    <div class="birthday-layout">
+      <div class="card-panel">
+        <div class="panel-title">🎂 إضافة تاريخ ميلاد</div>
+        <div class="form-group">
+          <label class="form-label">👤 الاسم</label>
+          <input type="text" class="form-input" id="bdName" placeholder="مثال: أحمد محمد">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📅 تاريخ الميلاد</label>
+          <input type="date" class="form-input" id="bdDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">📝 ملاحظات (اختياري)</label>
+          <input type="text" class="form-input" id="bdNote" placeholder="مثال: أخي الأكبر">
+        </div>
+        <button class="btn btn-primary" onclick="addBirthday()">➕ إضافة</button>
+      </div>
+
+      <div class="card-panel">
+        <div class="panel-title">📋 قائمة تواريخ الميلاد (<span id="bdCount">0</span>)</div>
+        <div class="birthday-list" id="birthdayList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- تبويب التقويم الزراعي -->
+  <div class="tab-pane" id="tab-agri">
+    <div class="card-panel" style="margin-bottom: 20px;">
+      <div class="panel-title">🌾 التقويم الزراعي المصري (القبطي)</div>
+      <p style="color: var(--ink-light); font-size: 0.9rem; line-height: 1.8;">
+        التقويم الزراعي المصري القديم، يتبعه الفلاح المصري منذ آلاف السنين لتنظيم مواسم الزراعة والحصاد. يعتمد على شهور قبطية مرتبطة بحركة الشمس على مدار السنة.
+      </p>
+    </div>
+    <div class="agri-grid" id="agriGrid"></div>
+  </div>
+
+  <!-- تبويب الفلك -->
+  <div class="tab-pane" id="tab-astro">
+    <div class="card-panel" style="margin-bottom: 20px;">
+      <div class="panel-title">🔭 الأحداث الفلكية اليوم</div>
+      <p style="color: var(--ink-light); font-size: 0.88rem; margin-bottom: 5px;">
+        الأوقات محسوبة تقريبياً لموقعك الجغرافي (الافتراضي: القاهرة).
+      </p>
+    </div>
+    <div class="astro-grid" id="astroGrid"></div>
+    <div class="events-list" id="astroEvents"></div>
+  </div>
+
+  <!-- تبويب الليل والنهار -->
+  <div class="tab-pane" id="tab-daynight">
+    <div class="daynight-layout">
+      <div class="sky-diagram" id="skyDiagram">
+        <div class="stars"></div>
+        <div class="sky-arc"></div>
+        <div class="sky-label east">🌅 الشرق</div>
+        <div class="sky-label south">☀️ الجنوب</div>
+        <div class="sky-label west">🌇 الغرب</div>
+        <div class="sun-orb" id="sunOrb"></div>
+        <div class="moon-orb" id="moonOrb"></div>
+        <div class="sky-horizon"></div>
+      </div>
+
+      <div class="daynight-info" id="daynightInfo">
+        <!-- يتم ملؤها بـ JS -->
+      </div>
+    </div>
+
+    <div class="day-progress-bar" style="margin-top: 20px;">
+      <div class="day-progress-label">
+        <span>🌞 تقدم اليوم</span>
+        <span id="dayPercent">0%</span>
+      </div>
+      <div class="day-progress-track">
+        <div class="day-progress-handle" id="dayHandle" style="left: 0%"></div>
+      </div>
+      <div class="day-progress-marks">
+        <span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- شريط التنزيل -->
+<div class="download-bar">
+  <div class="download-card">
+    <div class="download-info">
+      <div class="download-info-icon">💾</div>
+      <div class="download-info-text">
+        <div class="download-info-title">تنزيل المحتوى الحالي</div>
+        <div class="download-info-sub" id="downloadSub">التقويم — <span id="downloadDate">—</span></div>
+      </div>
+    </div>
+    <div class="download-buttons">
+      <button class="dl-btn html" onclick="downloadAs('html')">🌐 HTML</button>
+      <button class="dl-btn pdf" onclick="downloadAs('pdf')">📄 PDF</button>
+      <button class="dl-btn txt" onclick="downloadAs('txt')">📝 TXT</button>
+      <button class="dl-btn png" onclick="downloadAs('png')">🖼️ PNG</button>
+    </div>
+  </div>
+</div>
+
+<!-- الفوتر -->
+<footer class="footer">
+  <div class="footer-brand">📅 تقويم AhmdSchool</div>
+  <div>أجندة احترافية تعمل أوفلاين — بياناتك محفوظة في متصفحك فقط</div>
+  <div class="footer-links">
+    <span>© 2025 — جميع الحقوق محفوظة <strong style="color: var(--gold-dark);">AhmdSchool</strong></span>
+    <span>✉️ openlibrary@collector.org</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================
+// الحالة العامة
+// ============================================
+let currentDate = new Date();
+let notes = {};        // { 'YYYY-MM-DD': { dayNote: '', nightNote: '', hours: { 0: '', 1: '', ... } } }
+let birthdays = [];    // [{ id, name, date, note }]
+let isDarkMode = false;
+let currentTab = 'calendar';
+
+// الشهور القبطية الزراعية
+const AGRI_MONTHS = [
+  { name: 'توت', emoji: '🌾', start: [9, 11], end: [10, 10], season: 'الفيض', color: '#1e40af', desc: 'أول شهور السنة القبطية. موسم اكتمال فيضان النيل، يبدأ الفلاح بزراعة المحاصيل الشتوية.' },
+  { name: 'بابة', emoji: '🌱', start: [10, 11], end: [11, 10], season: 'الفيض', color: '#0891b2', desc: 'موسم الزراعة الشتوية. يبدأ الفلاح في غرس القمح والشعير والبرسيم.' },
+  { name: 'هاتور', emoji: '🌿', start: [11, 11], end: [12, 10], season: 'الفيض', color: '#059669', desc: 'شهر نمو المحاصيل. الأرض تكون في أبهى صورها بعد الفيضان.' },
+  { name: 'كياهك', emoji: '❄️', start: [12, 11], end: [1, 10], season: 'الشتاء', color: '#0ea5e9', desc: 'بداية الشتاء. ليالي طويلة، ومحاصيل الشتاء تزدهر.' },
+  { name: 'طوبة', emoji: '🌧️', start: [1, 11], end: [2, 10], season: 'الشتاء', color: '#6366f1', desc: 'أبرد شهور السنة. قال المصريون: "طوبة تخلي الصبية كركوبة" من شدة البرد.' },
+  { name: 'أمشير', emoji: '🌬️', start: [2, 11], end: [3, 10], season: 'الشتاء', color: '#8b5cf6', desc: 'شهر الرياح. "أمشير أبو الزعابير الكتير" — تكثر فيه الرياح والأمطار.' },
+  { name: 'برمهات', emoji: '🌸', start: [3, 11], end: [4, 9], season: 'الربيع', color: '#ec4899', desc: 'بداية الربيع. اعتدال في الجو، وموسم حصاد بعض المحاصيل.' },
+  { name: 'برمودة', emoji: '🌾', start: [4, 10], end: [5, 9], season: 'الربيع', color: '#f59e0b', desc: 'موسم الحصاد. يبدأ حصاد القمح والشعير. أهم شهور الفلاح.' },
+  { name: 'بشنس', emoji: '☀️', start: [5, 10], end: [6, 8], season: 'الربيع', color: '#f97316', desc: 'بداية الصيف. الجو حار، وموسم جني الفواكه الصيفية.' },
+  { name: 'بؤونة', emoji: '🔥', start: [6, 9], end: [7, 8], season: 'الصيف', color: '#dc2626', desc: 'أشد شهور السنة حرارة. "بؤونة تكلي الرؤوس" — من شدة الحر.' },
+  { name: 'أبيب', emoji: '💧', start: [7, 9], end: [8, 8], season: 'الصيف', color: '#0ea5e9', desc: 'بداية فيضان النيل. وقت فيضان نهر النيل قديماً، وأهم موسم للفلاح.' },
+  { name: 'مسري', emoji: '🌊', start: [8, 9], end: [9, 10], season: 'الفيض', color: '#1e40af', desc: 'يستمر الفيضان. تجهيز الأرض للزراعة الجديدة. آخر شهور السنة القبطية.' }
+];
+
+// ============================================
+// أدوات
+// ============================================
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function dateKey(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function formatTime(d) {
+  let h = d.getHours();
+  const m = String(d.getMinutes()).padStart(2, '0');
+  const s = String(d.getSeconds()).padStart(2, '0');
+  const period = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return { time: `${h}:${m}:${s}`, period, h24: d.getHours() };
+}
+
+function formatHour12(h) {
+  const period = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12} ${period}`;
+}
+
+// التقويم الهجري التقريبي
+function getHijriDate(date) {
+  try {
+    const hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    }).format(date);
+    return hijri;
+  } catch (e) {
+    return '';
+  }
+}
+
+// ============================================
+// الساعة الحية
+// ============================================
+function updateClock() {
+  const now = new Date();
+  const t = formatTime(now);
+  document.getElementById('liveClock').innerHTML =
+    `${t.time} <span class="period">${t.period}</span>`;
+  document.getElementById('liveDate').textContent =
+    now.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('liveHijri').textContent =
+    '🌙 ' + getHijriDate(now);
+
+  // تحديث شريط تقدم اليوم
+  updateDayProgress(now);
+  // تحديث إنفوجرافيك السماء إن كنا في التبويب
+  if (currentTab === 'daynight') updateSkyDiagram(now);
+}
+
+function updateDayProgress(now) {
+  const totalMin = now.getHours() * 60 + now.getMinutes();
+  const percent = (totalMin / (24 * 60)) * 100;
+  const handle = document.getElementById('dayHandle');
+  if (handle) {
+    // التتبع: من 12AM إلى 12AM
+    handle.style.left = percent + '%';
+  }
+  const percentEl = document.getElementById('dayPercent');
+  if (percentEl) percentEl.textContent = Math.round(percent) + '%';
+}
+
+// ============================================
+// التقويم — صفحتان
+// ============================================
+function renderCalendar() {
+  const d = currentDate;
+  const dayKey = dateKey(d);
+
+  // اسم اليوم بالعربية
+  const dayName = d.toLocaleDateString('ar-EG', { weekday: 'long' });
+  const dateFull = d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  document.getElementById('dayName').textContent = `☀️ ${dayName}`;
+  document.getElementById('dateGregorian').textContent = dateFull;
+  document.getElementById('nightDayName').textContent = `🌙 ${dayName}`;
+  document.getElementById('nightDateGregorian').textContent = dateFull;
+  document.getElementById('calDateDisplay').textContent = dateFull;
+
+  // ملاحظات اليوم
+  const dayData = notes[dayKey] || { dayNote: '', nightNote: '', hours: {} };
+
+  // الساعات النهارية: 6 ص - 5 م
+  const dayHoursEl = document.getElementById('dayHours');
+  dayHoursEl.innerHTML = '';
+  for (let h = 6; h < 18; h++) {
+    dayHoursEl.appendChild(createHourRow(h, dayData, dayKey));
+  }
+
+  // الساعات الليلية: 6 م - 5 ص
+  const nightHoursEl = document.getElementById('nightHours');
+  nightHoursEl.innerHTML = '';
+  for (let h = 18; h < 24; h++) {
+    nightHoursEl.appendChild(createHourRow(h, dayData, dayKey));
+  }
+  for (let h = 0; h < 6; h++) {
+    nightHoursEl.appendChild(createHourRow(h, dayData, dayKey));
+  }
+
+  // ملاحظات الصفحات
+  document.getElementById('dayNote').value = dayData.dayNote || '';
+  document.getElementById('nightNote').value = dayData.nightNote || '';
+
+  document.getElementById('downloadDate').textContent = dateFull;
+}
+
+function createHourRow(hour, dayData, dayKey) {
+  const row = document.createElement('div');
+  row.className = 'hour-row';
+
+  const now = new Date();
+  const isToday = dateKey(now) === dayKey;
+  const isCurrentHour = isToday && now.getHours() === hour;
+
+  const label = document.createElement('div');
+  label.className = 'hour-label' + (isCurrentHour ? ' current' : '');
+  label.textContent = formatHour12(hour);
+  row.appendChild(label);
+
+  const textarea = document.createElement('textarea');
+  textarea.className = 'hour-note';
+  textarea.placeholder = `ملاحظة الساعة ${formatHour12(hour)}...`;
+  textarea.value = (dayData.hours && dayData.hours[hour]) || '';
+  if (textarea.value) textarea.classList.add('has-content');
+  textarea.addEventListener('input', () => {
+    if (!notes[dayKey]) notes[dayKey] = { dayNote: '', nightNote: '', hours: {} };
+    if (!notes[dayKey].hours) notes[dayKey].hours = {};
+    notes[dayKey].hours[hour] = textarea.value;
+    textarea.classList.toggle('has-content', !!textarea.value);
+    saveNotes();
+  });
+  row.appendChild(textarea);
+
+  return row;
+}
+
+function changeDay(delta) {
+  currentDate.setDate(currentDate.getDate() + delta);
+  saveCurrentDate();
+  renderCalendar();
+}
+
+function goToToday() {
+  currentDate = new Date();
+  saveCurrentDate();
+  renderCalendar();
+  showToast('📅 عدنا لليوم');
+}
+
+function saveCurrentDate() {
+  localStorage.setItem('cal_current_date', currentDate.toISOString());
+}
+
+function saveNotes() {
+  try {
+    localStorage.setItem('cal_notes', JSON.stringify(notes));
+  } catch (e) {
+    showToast('⚠️ مساحة التخزين ممتلئة');
+  }
+}
+
+function loadNotes() {
+  try {
+    const s = localStorage.getItem('cal_notes');
+    if (s) notes = JSON.parse(s);
+  } catch (e) { notes = {}; }
+}
+
+// ============================================
+// تواريخ الميلاد
+// ============================================
+function loadBirthdays() {
+  try {
+    const s = localStorage.getItem('cal_birthdays');
+    if (s) birthdays = JSON.parse(s);
+  } catch (e) { birthdays = []; }
+}
+function saveBirthdays() {
+  try {
+    localStorage.setItem('cal_birthdays', JSON.stringify(birthdays));
+  } catch (e) { showToast('⚠️ مساحة التخزين ممتلئة'); }
+}
+
+function addBirthday() {
+  const name = document.getElementById('bdName').value.trim();
+  const date = document.getElementById('bdDate').value;
+  const note = document.getElementById('bdNote').value.trim();
+
+  if (!name) { showToast('⚠️ اكتب الاسم'); return; }
+  if (!date) { showToast('⚠️ اختر تاريخ الميلاد'); return; }
+
+  birthdays.push({
+    id: 'bd_' + Date.now(),
+    name, date, note
+  });
+  saveBirthdays();
+  renderBirthdays();
+
+  document.getElementById('bdName').value = '';
+  document.getElementById('bdDate').value = '';
+  document.getElementById('bdNote').value = '';
+  showToast('🎂 تم إضافة تاريخ الميلاد');
+}
+
+function deleteBirthday(id) {
+  if (!confirm('حذف تاريخ الميلاد؟')) return;
+  birthdays = birthdays.filter(b => b.id !== id);
+  saveBirthdays();
+  renderBirthdays();
+  showToast('🗑️ تم الحذف');
+}
+
+function renderBirthdays() {
+  const list = document.getElementById('birthdayList');
+  const count = document.getElementById('bdCount');
+  count.textContent = birthdays.length;
+
+  if (birthdays.length === 0) {
+    list.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--ink-muted);">لا توجد تواريخ ميلاد بعد. أضف أول تاريخ!</div>';
+    return;
+  }
+
+  // ترتيب حسب الأقرب من اليوم
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const sorted = [...birthdays].sort((a, b) => {
+    const da = getNextBirthday(new Date(a.date), today);
+    const db = getNextBirthday(new Date(b.date), today);
+    return da - db;
+  });
+
+  list.innerHTML = '';
+  sorted.forEach(b => {
+    const bd = new Date(b.date);
+    const next = getNextBirthday(bd, today);
+    const daysLeft = Math.ceil((next - today) / (1000 * 60 * 60 * 24));
+    const age = today.getFullYear() - bd.getFullYear() - (next.getFullYear() - today.getFullYear() > 0 ? 0 : 0);
+    const isToday = daysLeft === 0;
+
+    const card = document.createElement('div');
+    card.className = 'birthday-card';
+    card.innerHTML = `
+      <button class="birthday-delete" onclick="deleteBirthday('${b.id}')" title="حذف">✕</button>
+      <div class="birthday-header">
+        <div class="birthday-avatar">${b.name.charAt(0)}</div>
+        <div>
+          <div class="birthday-name">${escapeHtml(b.name)}</div>
+          <div class="birthday-date">${bd.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+        </div>
+      </div>
+      <div class="birthday-details">
+        <span class="birthday-badge ${isToday ? 'today' : ''}">
+          ${isToday ? 'عيد ميلاده اليوم!' : `بعد ${daysLeft} يوم`}
+        </span>
+        ${b.note ? `<span class="birthday-badge">📝 ${escapeHtml(b.note)}</span>` : ''}
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function getNextBirthday(birthDate, today) {
+  const next = new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate());
+  if (next < today) next.setFullYear(today.getFullYear() + 1);
+  return next;
+}
+
+// ============================================
+// التقويم الزراعي
+// ============================================
+function renderAgri() {
+  const today = new Date();
+  const todayMonth = today.getMonth() + 1;
+  const todayDay = today.getDate();
+
+  const grid = document.getElementById('agriGrid');
+  grid.innerHTML = '';
+
+  AGRI_MONTHS.forEach(m => {
+    // التحقق إن كنا في هذا الشهر الزراعي
+    const inMonth = isInAgriMonth(todayMonth, todayDay, m.start, m.end);
+    const card = document.createElement('div');
+    card.className = 'agri-card' + (inMonth ? ' current' : '');
+    card.innerHTML = `
+      <span class="agri-emoji">${m.emoji}</span>
+      <div class="agri-name">${m.name}</div>
+      <div class="agri-period">${m.start[1]}/${m.start[0]} → ${m.end[1]}/${m.end[0]}</div>
+      <div class="agri-desc">${m.desc}</div>
+      <span class="agri-season" style="background: ${m.color}20; color: ${m.color}; border: 1px solid ${m.color}40;">
+        🌿 موسم ${m.season}
+      </span>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function isInAgriMonth(m, d, start, end) {
+  const startVal = start[0] * 100 + start[1];
+  const endVal = end[0] * 100 + end[1];
+  const curVal = m * 100 + d;
+  if (startVal <= endVal) {
+    return curVal >= startVal && curVal <= endVal;
+  } else {
+    // يعبر رأس السنة
+    return curVal >= startVal || curVal <= endVal;
+  }
+}
+
+// ============================================
+// الفلك
+// ============================================
+function calculateAstroEvents() {
+  // حساب تقريبي لأوقات الشمس بناءً على موقع القاهرة
+  const now = new Date();
+  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+
+  // معادلة الوقت وميل الشمس
+  const declination = 23.44 * Math.sin((360 / 365) * (dayOfYear - 81) * Math.PI / 180);
+  const lat = 30.04; // القاهرة
+
+  const latRad = lat * Math.PI / 180;
+  const decRad = declination * Math.PI / 180;
+  const hourAngle = Math.acos(-Math.tan(latRad) * Math.tan(decRad)) * 180 / Math.PI;
+  const dayLength = (hourAngle * 2) / 15;
+
+  // وقت الظهيرة (تقريبي)
+  const solarNoon = 12; // تقريب
+  const sunrise = solarNoon - dayLength / 2;
+  const sunset = solarNoon + dayLength / 2;
+
+  // مراحل القمر
+  const lunarCycle = 29.53059;
+  const knownNewMoon = new Date('2000-01-06T18:14:00Z');
+  const daysSinceNew = (now - knownNewMoon) / (1000 * 60 * 60 * 24);
+  const moonPhase = ((daysSinceNew % lunarCycle) + lunarCycle) % lunarCycle;
+  const moonIllumination = Math.round(50 * (1 - Math.cos(2 * Math.PI * moonPhase / lunarCycle)));
+
+  return {
+    sunrise: formatDecimalHour(sunrise),
+    sunset: formatDecimalHour(sunset),
+    solarNoon: formatDecimalHour(solarNoon),
+    dayLength: formatDuration(dayLength),
+    nightLength: formatDuration(24 - dayLength),
+    moonPhase: moonPhase,
+    moonIllumination: moonIllumination,
+    moonPhaseName: getMoonPhaseName(moonPhase),
+    declination: declination.toFixed(2)
+  };
+}
+
+function formatDecimalHour(h) {
+  const hours = Math.floor(h);
+  const minutes = Math.round((h - hours) * 60);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const h12 = hours % 12 || 12;
+  return `${h12}:${String(minutes).padStart(2, '0')} ${period}`;
+}
+
+function formatDuration(hours) {
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return `${h}س ${m}د`;
+}
+
+function getMoonPhaseName(phase) {
+  if (phase < 1.84) return 'محاق 🌑';
+  if (phase < 5.53) return 'هلال متزايد 🌒';
+  if (phase < 9.22) return 'تربيع أول 🌓';
+  if (phase < 12.91) return 'أحدب متزايد 🌔';
+  if (phase < 16.61) return 'بدر كامل 🌕';
+  if (phase < 20.30) return 'أحدب متناقص 🌖';
+  if (phase < 23.99) return 'تربيع أخير 🌗';
+  if (phase < 27.68) return 'هلال متناقص 🌘';
+  return 'محاق 🌑';
+}
+
+function renderAstro() {
+  const a = calculateAstroEvents();
+
+  const grid = document.getElementById('astroGrid');
+  grid.innerHTML = `
+    <div class="astro-card">
+      <div class="astro-icon sun">🌅</div>
+      <div class="astro-content">
+        <div class="astro-label">شروق الشمس</div>
+        <div class="astro-value">${a.sunrise}</div>
+      </div>
+    </div>
+    <div class="astro-card">
+      <div class="astro-icon sun">🌇</div>
+      <div class="astro-content">
+        <div class="astro-label">غروب الشمس</div>
+        <div class="astro-value">${a.sunset}</div>
+      </div>
+    </div>
+    <div class="astro-card">
+      <div class="astro-icon sun">☀️</div>
+      <div class="astro-content">
+        <div class="astro-label">الزوال (الظهر)</div>
+        <div class="astro-value">${a.solarNoon}</div>
+      </div>
+    </div>
+    <div class="astro-card">
+      <div class="astro-icon sun">⏱️</div>
+      <div class="astro-content">
+        <div class="astro-label">طول النهار</div>
+        <div class="astro-value">${a.dayLength}</div>
+      </div>
+    </div>
+    <div class="astro-card">
+      <div class="astro-icon moon">🌙</div>
+      <div class="astro-content">
+        <div class="astro-label">مرحلة القمر</div>
+        <div class="astro-value">${a.moonPhaseName}</div>
+      </div>
+    </div>
+    <div class="astro-card">
+      <div class="astro-icon moon">💡</div>
+      <div class="astro-content">
+        <div class="astro-label">إضاءة القمر</div>
+        <div class="astro-value">${a.moonIllumination}%</div>
+      </div>
+    </div>
+    <div class="astro-card">
+      <div class="astro-icon star">📐</div>
+      <div class="astro-content">
+        <div class="astro-label">ميل الشمس</div>
+        <div class="astro-value">${a.declination}°</div>
+      </div>
+    </div>
+    <div class="astro-card">
+      <div class="astro-icon planet">🌍</div>
+      <div class="astro-content">
+        <div class="astro-label">الموقع الافتراضي</div>
+        <div class="astro-value">القاهرة 30°</div>
+      </div>
+    </div>
+  `;
+
+  // أحداث اليوم
+  const events = [
+    { time: a.sunrise, title: '🌅 شروق الشمس', desc: 'بداية النهار. ذروة النشاط البيولوجي للكائنات الحية.' },
+    { time: formatDecimalHour(9), title: '☕ منتصف الصباح', desc: 'وقت مناسب للعمل والإنجاز. الشمس في ارتفاعها المعتدل.' },
+    { time: a.solarNoon, title: '☀️ الزوال', desc: 'الشمس في أعلى نقطة لها. أقصر ظل في اليوم.' },
+    { time: formatDecimalHour(15), title: '🌤️ بعد الظهر', desc: 'وقت طيب للراحة والشرب. استمرار الحرارة المرتفعة.' },
+    { time: a.sunset, title: '🌇 غروب الشمس', desc: 'بداية الليل. ظاهرة الشفق تصبغ السماء بألوان خلابة.' },
+    { time: formatDecimalHour(20), title: '🌆 ساعة الغروب المدني', desc: 'اختفاء ضوء الشمس تماماً عن الأفق.' },
+    { time: formatDecimalHour(24), title: '🌙 منتصف الليل', desc: 'أطول الظلال. وقت مناسب للمراقبة الفلكية.' }
+  ];
+
+  const eventsEl = document.getElementById('astroEvents');
+  eventsEl.innerHTML = events.map(e => `
+    <div class="event-item">
+      <div class="event-time">${e.time}</div>
+      <div class="event-content">
+        <div class="event-title">${e.title}</div>
+        <div class="event-desc">${e.desc}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ============================================
+// الليل والنهار
+// ============================================
+function updateSkyDiagram(now) {
+  const h = now.getHours() + now.getMinutes() / 60;
+
+  // حساب موضع الشمس بين 6ص (0%) و 6م (100%)
+  let sunPercent;
+  if (h >= 6 && h <= 18) {
+    sunPercent = (h - 6) / 12;
+  } else {
+    sunPercent = -1; // تحت الأفق
+  }
+
+  // حساب موضع القمر بين 6م (0%) و 6ص (100%)
+  let moonPercent;
+  if (h >= 18 || h < 6) {
+    const hh = h >= 18 ? h - 18 : h + 6;
+    moonPercent = hh / 12;
+  } else {
+    moonPercent = -1;
+  }
+
+  const sunOrb = document.getElementById('sunOrb');
+  const moonOrb = document.getElementById('moonOrb');
+
+  // قوس الشمس
+  if (sunPercent >= 0) {
+    const x = 10 + sunPercent * 80; // 10% إلى 90%
+    const y = 15 + Math.sin(sunPercent * Math.PI) * 55;
+    sunOrb.style.left = x + '%';
+    sunOrb.style.top = (100 - y) + '%';
+    sunOrb.style.display = 'block';
+  } else {
+    sunOrb.style.display = 'none';
+  }
+
+  // قوس القمر
+  if (moonPercent >= 0) {
+    const x = 10 + moonPercent * 80;
+    const y = 15 + Math.sin(moonPercent * Math.PI) * 50;
+    moonOrb.style.left = x + '%';
+    moonOrb.style.top = (100 - y) + '%';
+    moonOrb.style.display = 'block';
+  } else {
+    moonOrb.style.display = 'none';
+  }
+
+  // معلومات تفصيلية
+  const a = calculateAstroEvents();
+  const info = document.getElementById('daynightInfo');
+  info.innerHTML = `
+    <div class="info-card">
+      <div class="info-icon sunrise">🌅</div>
+      <div class="info-content">
+        <div class="info-label">شروق الشمس</div>
+        <div class="info-value">${a.sunrise}</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon sunset">🌇</div>
+      <div class="info-content">
+        <div class="info-label">غروب الشمس</div>
+        <div class="info-value">${a.sunset}</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon day-length">☀️</div>
+      <div class="info-content">
+        <div class="info-label">طول النهار</div>
+        <div class="info-value">${a.dayLength}</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon night-length">🌙</div>
+      <div class="info-content">
+        <div class="info-label">طول الليل</div>
+        <div class="info-value">${a.nightLength}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================
+// البحث
+// ============================================
+function performSearch(query) {
+  const resultsEl = document.getElementById('searchResults');
+  query = query.trim();
+
+  if (!query) {
+    resultsEl.classList.remove('show');
+    return;
+  }
+
+  const q = query.toLowerCase();
+  const results = [];
+
+  // البحث في الملاحظات
+  Object.keys(notes).forEach(dateK => {
+    const dayData = notes[dateK];
+    if (dayData.dayNote && dayData.dayNote.toLowerCase().includes(q)) {
+      results.push({
+        type: 'note', date: dateK, icon: '📝',
+        title: dayData.dayNote.substring(0, 80),
+        meta: `ملاحظة نهارية — ${dateK}`
+      });
+    }
+    if (dayData.nightNote && dayData.nightNote.toLowerCase().includes(q)) {
+      results.push({
+        type: 'note', date: dateK, icon: '📝',
+        title: dayData.nightNote.substring(0, 80),
+        meta: `ملاحظة ليلية — ${dateK}`
+      });
+    }
+    if (dayData.hours) {
+      Object.keys(dayData.hours).forEach(h => {
+        const v = dayData.hours[h];
+        if (v && v.toLowerCase().includes(q)) {
+          results.push({
+            type: 'note', date: dateK, icon: '⏰',
+            title: v.substring(0, 80),
+            meta: `الساعة ${formatHour12(parseInt(h))} — ${dateK}`
+          });
+        }
+      });
+    }
+  });
+
+  // البحث في تواريخ الميلاد
+  birthdays.forEach(b => {
+    if (b.name.toLowerCase().includes(q) || (b.note && b.note.toLowerCase().includes(q))) {
+      results.push({
+        type: 'birthday', id: b.id, icon: '🎂',
+        title: b.name,
+        meta: `تاريخ الميلاد: ${new Date(b.date).toLocaleDateString('ar-EG')}${b.note ? ' — ' + b.note : ''}`
+      });
+    }
+  });
+
+  // العرض
+  if (results.length === 0) {
+    resultsEl.innerHTML = '<div class="search-empty">لا توجد نتائج</div>';
+  } else {
+    resultsEl.innerHTML = results.slice(0, 30).map(r => `
+      <div class="search-result-item" onclick="clickSearchResult('${r.type}', '${r.date || ''}', '${r.id || ''}')">
+        <div class="sr-title">${r.icon} ${escapeHtml(r.title)}</div>
+        <div class="sr-meta">
+          <span class="sr-type ${r.type}">${r.type === 'note' ? 'ملاحظة' : 'ميلاد'}</span>
+          ${escapeHtml(r.meta)}
+        </div>
+      </div>
+    `).join('');
+  }
+  resultsEl.classList.add('show');
+}
+
+function clickSearchResult(type, date, id) {
+  document.getElementById('searchResults').classList.remove('show');
+  document.getElementById('searchInput').value = '';
+
+  if (type === 'note' && date) {
+    currentDate = new Date(date);
+    saveCurrentDate();
+    switchTab('calendar');
+    renderCalendar();
+    showToast('📅 تم الانتقال للتاريخ');
+  } else if (type === 'birthday') {
+    switchTab('birthdays');
+  }
+}
+
+// ============================================
+// التبويبات
+// ============================================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + tab);
+  });
+
+  if (tab === 'birthdays') renderBirthdays();
+  if (tab === 'agri') renderAgri();
+  if (tab === 'astro') renderAstro();
+  if (tab === 'daynight') updateSkyDiagram(new Date());
+}
+
+// ============================================
+// المظهر
+// ============================================
+function toggleTheme() {
+  isDarkMode = !isDarkMode;
+  document.body.classList.toggle('dark-mode', isDarkMode);
+  document.getElementById('themeBtn').textContent = isDarkMode ? '☀️' : '🌙';
+  localStorage.setItem('cal_theme', isDarkMode ? 'dark' : 'light');
+}
+
+// ============================================
+// التنزيل
+// ============================================
+function getCurrentContent() {
+  if (currentTab === 'calendar') {
+    return buildCalendarText();
+  } else if (currentTab === 'birthdays') {
+    return buildBirthdaysText();
+  } else if (currentTab === 'agri') {
+    return buildAgriText();
+  } else if (currentTab === 'astro') {
+    return buildAstroText();
+  } else {
+    return buildDayNightText();
+  }
+}
+
+function getCurrentHtml() {
+  const tab = currentTab;
+  const target = document.querySelector(`#tab-${tab} .card-panel, #tab-${tab} .calendar-book, #tab-${tab} .daynight-layout`) || document.getElementById('tab-' + tab);
+  const clone = target.cloneNode(true);
+  // إزالة الأزرار من النسخة
+  clone.querySelectorAll('button').forEach(b => b.remove());
+
+  return `
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+      <meta charset="UTF-8">
+      <title>تقويم AhmdSchool - ${new Date().toLocaleDateString('ar-EG')}</title>
+      <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700;900&family=Cairo:wght@400;600;700;900&family=Reem+Kufi:wght@400;600;700&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Cairo', sans-serif; background: #f5efe0; color: #2a2118; padding: 30px; direction: rtl; }
+        h1 { color: #8a6b3a; font-family: 'Amiri', serif; text-align: center; margin-bottom: 25px; font-size: 2rem; }
+        .card-panel, .calendar-book, .daynight-layout { background: white; border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #e8e0cc; }
+        .page { padding: 25px; }
+        .hour-row { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px dashed #e8e0cc; }
+        .hour-label { width: 65px; padding: 6px; background: #f5f0e3; border-radius: 8px; text-align: center; font-weight: 700; }
+        .hour-note { flex: 1; padding: 6px; font-size: 0.9rem; }
+        .hour-note:empty::before { content: '(فارغ)'; color: #a09580; font-style: italic; }
+        .page-header { text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #b8945f; }
+        .page-day-name { font-family: 'Amiri', serif; font-size: 1.6rem; color: #2a2118; }
+        .page-date { font-size: 0.9rem; color: #6b5d4a; }
+        .page-period { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; margin-top: 6px; }
+        .page-period.day { background: #fbbf24; color: white; }
+        .page-period.night { background: #1e3a8a; color: white; }
+        .footer-brand { text-align: center; padding: 25px; color: #8a6b3a; font-family: 'Amiri', serif; font-weight: 700; font-size: 1.1rem; border-top: 2px solid #b8945f; margin-top: 30px; }
+        .footer-sub { text-align: center; color: #6b5d4a; font-size: 0.85rem; margin-top: 8px; }
+        textarea { border: none; background: transparent; resize: none; width: 100%; font-family: inherit; padding: 8px; }
+        .calendar-book { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 800px) { .calendar-book { grid-template-columns: 1fr; } }
+        .agri-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .agri-card { background: #fdfbf5; padding: 20px; border-radius: 12px; border-top: 4px solid #b8945f; }
+        .agri-emoji { font-size: 2.5rem; text-align: center; display: block; }
+        .agri-name { font-family: 'Amiri', serif; font-size: 1.3rem; font-weight: 900; text-align: center; margin: 8px 0; }
+        .agri-period { text-align: center; font-size: 0.85rem; color: #a09580; direction: ltr; }
+        .agri-desc { font-size: 0.85rem; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #e8e0cc; }
+        .agri-card.current { border-top-color: #c0392b; background: #fff5f0; }
+        .astro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+        .astro-card { display: flex; gap: 12px; padding: 15px; background: #fdfbf5; border-radius: 12px; }
+        .astro-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #f5f0e3; }
+        .astro-label { font-size: 0.78rem; color: #a09580; font-weight: 700; }
+        .astro-value { font-family: 'Reem Kufi', sans-serif; font-size: 1.1rem; font-weight: 700; direction: ltr; }
+        .event-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #e8e0cc; }
+        .event-time { padding: 6px 12px; background: #f5f0e3; border-radius: 10px; font-weight: 700; color: #8a6b3a; direction: ltr; }
+        .event-title { font-weight: 900; margin-bottom: 3px; }
+        .event-desc { font-size: 0.85rem; color: #6b5d4a; }
+        .birthday-card { padding: 15px; background: #fdfbf5; border-radius: 12px; margin-bottom: 10px; }
+        .birthday-name { font-weight: 900; font-size: 1rem; }
+        .birthday-date { font-size: 0.82rem; color: #6b5d4a; margin-top: 3px; }
+        .birthday-badge { display: inline-block; padding: 3px 10px; border-radius: 10px; background: #f5f0e3; font-size: 0.78rem; font-weight: 700; margin-top: 6px; }
+        .birthday-badge.today { background: #fbbf24; color: white; }
+        .info-card { display: flex; gap: 12px; padding: 15px; background: #fdfbf5; border-radius: 12px; margin-bottom: 10px; }
+        .info-value { font-family: 'Reem Kufi', sans-serif; font-size: 1.1rem; font-weight: 700; direction: ltr; }
+      </style>
+    </head>
+    <body>
+      <h1>📅 تقويم AhmdSchool</h1>
+      ${clone.outerHTML}
+      <div class="footer-brand">📅 تقويم AhmdSchool</div>
+      <div class="footer-sub">© 2025 AhmdSchool — openlibrary@collector.org</div>
+    </body>
+    </html>
+  `;
+}
+
+function buildCalendarText() {
+  const dayKey = dateKey(currentDate);
+  const d = notes[dayKey] || { dayNote: '', nightNote: '', hours: {} };
+  const dateStr = currentDate.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  let text = `📅 تقويم AhmdSchool\n${'='.repeat(40)}\n\n📆 ${dateStr}\n\n`;
+  text += `🌙 ${getHijriDate(currentDate)}\n\n`;
+
+  text += `───── ☀️ ساعات النهار ─────\n\n`;
+  for (let h = 6; h < 18; h++) {
+    const note = (d.hours && d.hours[h]) || '';
+    text += `[${formatHour12(h)}] ${note || '(فارغ)'}\n`;
+  }
+
+  text += `\n───── 🌙 ساعات الليل ─────\n\n`;
+  for (let h = 18; h < 24; h++) {
+    const note = (d.hours && d.hours[h]) || '';
+    text += `[${formatHour12(h)}] ${note || '(فارغ)'}\n`;
+  }
+  for (let h = 0; h < 6; h++) {
+    const note = (d.hours && d.hours[h]) || '';
+    text += `[${formatHour12(h)}] ${note || '(فارغ)'}\n`;
+  }
+
+  if (d.dayNote) text += `\n📝 ملاحظات النهار: ${d.dayNote}\n`;
+  if (d.nightNote) text += `\n📝 ملاحظات الليل: ${d.nightNote}\n`;
+
+  text += `\n${'='.repeat(40)}\n© 2025 AhmdSchool\nopenlibrary@collector.org\n`;
+  return text;
+}
+
+function buildBirthdaysText() {
+  let text = `🎂 تواريخ الميلاد\n${'='.repeat(40)}\n\n`;
+  if (birthdays.length === 0) {
+    text += '(لا توجد تواريخ)\n';
+  } else {
+    birthdays.forEach((b, i) => {
+      const bd = new Date(b.date);
+      text += `${i + 1}. ${b.name}\n`;
+      text += `   📅 ${bd.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}\n`;
+      if (b.note) text += `   📝 ${b.note}\n`;
+      text += '\n';
+    });
+  }
+  text += `${'='.repeat(40)}\n© 2025 AhmdSchool\n`;
+  return text;
+}
+
+function buildAgriText() {
+  const today = new Date();
+  const m = today.getMonth() + 1;
+  const d = today.getDate();
+
+  let text = `🌾 التقويم الزراعي المصري\n${'='.repeat(40)}\n\n`;
+  AGRI_MONTHS.forEach(mn => {
+    const inMonth = isInAgriMonth(m, d, mn.start, mn.end);
+    text += `${mn.emoji} ${mn.name} ${inMonth ? '📌 (أنت هنا)' : ''}\n`;
+    text += `   الفترة: ${mn.start[1]}/${mn.start[0]} → ${mn.end[1]}/${mn.end[0]}\n`;
+    text += `   الموسم: ${mn.season}\n`;
+    text += `   ${mn.desc}\n\n`;
+  });
+  text += `${'='.repeat(40)}\n© 2025 AhmdSchool\n`;
+  return text;
+}
+
+function buildAstroText() {
+  const a = calculateAstroEvents();
+  let text = `🔭 الأحداث الفلكية اليوم\n${'='.repeat(40)}\n\n`;
+  text += `🌅 شروق الشمس: ${a.sunrise}\n`;
+  text += `🌇 غروب الشمس: ${a.sunset}\n`;
+  text += `☀️ الزوال: ${a.solarNoon}\n`;
+  text += `⏱️ طول النهار: ${a.dayLength}\n`;
+  text += `🌙 طول الليل: ${a.nightLength}\n`;
+  text += `🌕 مرحلة القمر: ${a.moonPhaseName}\n`;
+  text += `💡 إضاءة القمر: ${a.moonIllumination}%\n`;
+  text += `📐 ميل الشمس: ${a.declination}°\n`;
+  text += `\n${'='.repeat(40)}\n© 2025 AhmdSchool\n`;
+  return text;
+}
+
+function buildDayNightText() {
+  const a = calculateAstroEvents();
+  let text = `🌗 الليل والنهار\n${'='.repeat(40)}\n\n`;
+  text += `☀️ طول النهار: ${a.dayLength}\n`;
+  text += `🌙 طول الليل: ${a.nightLength}\n`;
+  text += `🌅 شروق الشمس: ${a.sunrise}\n`;
+  text += `🌇 غروب الشمس: ${a.sunset}\n`;
+  text += `🌕 مرحلة القمر: ${a.moonPhaseName}\n`;
+  text += `\n${'='.repeat(40)}\n© 2025 AhmdSchool\n`;
+  return text;
+}
+
+function downloadAs(format) {
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const filename = `AhmdSchool_${currentTab}_${dateStr}`;
+
+  if (format === 'txt') {
+    const text = getCurrentContent();
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename + '.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📝 تم تنزيل TXT');
+  } else if (format === 'html') {
+    const html = getCurrentHtml();
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename + '.html';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('🌐 تم تنزيل HTML');
+  } else if (format === 'pdf') {
+    downloadPDF(filename);
+  } else if (format === 'png') {
+    downloadPNG(filename);
+  }
+}
+
+async function downloadPDF(filename) {
+  try {
+    const { jsPDF } = window.jspdf;
+    const target = document.querySelector(`#tab-${currentTab}`);
+
+    showToast('⏳ جاري إنشاء PDF...');
+
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#f5efe0',
+      scale: 1.5,
+      useCORS: true
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+    heightLeft -= pdfHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdfHeight;
+    }
+
+    // إضافة حقوق في كل صفحة
+    const pageCount = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFontSize(8);
+      pdf.setTextColor(184, 148, 95);
+      pdf.text('© 2025 AhmdSchool — openlibrary@collector.org', pdfWidth / 2, pdfHeight - 5, { align: 'center' });
+    }
+
+    pdf.save(filename + '.pdf');
+    showToast('📄 تم تنزيل PDF');
+  } catch (e) {
+    console.error(e);
+    showToast('⚠️ فشل إنشاء PDF');
+  }
+}
+
+async function downloadPNG(filename) {
+  try {
+    showToast('⏳ جاري إنشاء الصورة...');
+    const target = document.querySelector(`#tab-${currentTab}`);
+
+    const canvas = await html2canvas(target, {
+      backgroundColor: '#f5efe0',
+      scale: 2,
+      useCORS: true
+    });
+
+    // إضافة حقوق
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgba(184, 148, 95, 0.9)';
+    ctx.font = 'bold 16px Cairo, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('© 2025 AhmdSchool — openlibrary@collector.org', canvas.width / 2, canvas.height - 20);
+
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename + '.png';
+    a.click();
+    showToast('🖼️ تم تنزيل PNG');
+  } catch (e) {
+    console.error(e);
+    showToast('⚠️ فشل إنشاء الصورة');
+  }
+}
+
+// ============================================
+// مستمعي الأحداث
+// ============================================
+document.getElementById('searchInput').addEventListener('input', e => {
+  performSearch(e.target.value);
+});
+
+document.getElementById('searchInput').addEventListener('focus', e => {
+  if (e.target.value.trim()) performSearch(e.target.value);
+});
+
+document.addEventListener('click', e => {
+  const wrap = document.querySelector('.search-wrap');
+  const results = document.getElementById('searchResults');
+  if (!wrap.contains(e.target) && !results.contains(e.target)) {
+    results.classList.remove('show');
+  }
+});
+
+// ============================================
+// التهيئة
+// ============================================
+function init() {
+  // المظهر
+  if (localStorage.getItem('cal_theme') === 'dark') {
+    isDarkMode = true;
+    document.body.classList.add('dark-mode');
+    document.getElementById('themeBtn').textContent = '☀️';
+  }
+
+  // التاريخ الحالي
+  const savedDate = localStorage.getItem('cal_current_date');
+  if (savedDate) {
+    try { currentDate = new Date(savedDate); } catch (e) {}
+  }
+
+  // الملاحظات
+  loadNotes();
+  loadBirthdays();
+
+  // العرض الأولي
+  renderCalendar();
+  renderBirthdays();
+
+  // الساعة الحية
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // إعادة الرسم كل دقيقة للملاحظات
+  setInterval(() => {
+    if (currentTab === 'calendar') renderCalendar();
+  }, 60000);
+
+  // تحديث خلفية السماء كل 30 ثانية
+  setInterval(() => {
+    if (currentTab === 'daynight') updateSkyDiagram(new Date());
+  }, 30000);
+
+  console.log('📅 تقويم AhmdSchool جاهز');
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else init();
+</script>
+</body>
+</html>
